@@ -44,6 +44,7 @@ import (
 // with migrations (sadly, need complex transaction)
 
 var tables = [...]string{`CREATE TABLE IF NOT EXISTS routes (
+	app_id varchar(256) NOT NULL,
 	app_name varchar(256) NOT NULL,
 	path varchar(256) NOT NULL,
 	image varchar(256) NOT NULL,
@@ -61,6 +62,7 @@ var tables = [...]string{`CREATE TABLE IF NOT EXISTS routes (
 );`,
 
 	`CREATE TABLE IF NOT EXISTS apps (
+	id varchar(256) NOT NULL,
 	name varchar(256) NOT NULL PRIMARY KEY,
 	config text NOT NULL,
 	created_at varchar(256),
@@ -74,6 +76,7 @@ var tables = [...]string{`CREATE TABLE IF NOT EXISTS routes (
 	status varchar(256) NOT NULL,
 	id varchar(256) NOT NULL,
 	app_name varchar(256) NOT NULL,
+	app_id varchar(256) NOT NULL,
 	path varchar(256) NOT NULL,
 	stats text,
 	error text,
@@ -82,14 +85,16 @@ var tables = [...]string{`CREATE TABLE IF NOT EXISTS routes (
 
 	`CREATE TABLE IF NOT EXISTS logs (
 	id varchar(256) NOT NULL PRIMARY KEY,
+	app_id varchar(256) NOT NULL,
 	app_name varchar(256) NOT NULL,
 	log text NOT NULL
 );`,
 }
 
 const (
-	routeSelector = `SELECT app_name, path, image, format, memory, cpus, type, timeout, idle_timeout, headers, config, created_at, updated_at FROM routes`
-	callSelector  = `SELECT id, created_at, started_at, completed_at, status, app_name, path, stats, error FROM calls`
+	routeSelector = `SELECT app_id, app_name, path, image, format, memory, cpus, type, timeout, idle_timeout, headers, config, created_at, updated_at FROM routes`
+	callSelector  = `SELECT id, created_at, started_at, completed_at, status, app_name, app_id, path, stats, error FROM calls`
+	appSelector   = `SELECT id, name, config, created_at, updated_at FROM apps WHERE name=?`
 )
 
 type sqlStore struct {
@@ -278,12 +283,14 @@ func (ds *sqlStore) clear() error {
 
 func (ds *sqlStore) InsertApp(ctx context.Context, app *models.App) (*models.App, error) {
 	query := ds.db.Rebind(`INSERT INTO apps (
+		id,
 		name,
 		config,
 		created_at,
 		updated_at
 	)
 	VALUES (
+		:id,
 		:name,
 		:config,
 		:created_at,
@@ -316,7 +323,7 @@ func (ds *sqlStore) UpdateApp(ctx context.Context, newapp *models.App) (*models.
 	err := ds.Tx(func(tx *sqlx.Tx) error {
 		// NOTE: must query whole object since we're returning app, Update logic
 		// must only modify modifiable fields (as seen here). need to fix brittle..
-		query := tx.Rebind(`SELECT name, config, created_at, updated_at FROM apps WHERE name=?`)
+		query := tx.Rebind(appSelector)
 		row := tx.QueryRowxContext(ctx, query, app.Name)
 
 		err := row.StructScan(app)
@@ -380,18 +387,23 @@ func (ds *sqlStore) RemoveApp(ctx context.Context, appName string) error {
 	})
 }
 
-func (ds *sqlStore) GetApp(ctx context.Context, name string) (*models.App, error) {
-	query := ds.db.Rebind(`SELECT name, config, created_at, updated_at FROM apps WHERE name=?`)
-	row := ds.db.QueryRowxContext(ctx, query, name)
+func getAppTx(tx *sqlx.Tx, ctx context.Context, name string, app *models.App) error {
+	query := tx.Rebind(appSelector)
+	row := tx.QueryRowxContext(ctx, query, name)
 
-	var res models.App
-	err := row.StructScan(&res)
+	err := row.StructScan(app)
 	if err == sql.ErrNoRows {
-		return nil, models.ErrAppsNotFound
-	} else if err != nil {
-		return nil, err
+		return models.ErrAppsNotFound
 	}
-	return &res, nil
+	return err
+}
+
+func (ds *sqlStore) GetApp(ctx context.Context, name string) (*models.App, error) {
+	var res models.App
+	err := ds.Tx(func(tx *sqlx.Tx) error {
+		return getAppTx(tx, ctx, name, &res)
+	})
+	return &res, err
 }
 
 // GetApps retrieves an array of apps according to a specific filter.
@@ -449,6 +461,7 @@ func (ds *sqlStore) InsertRoute(ctx context.Context, route *models.Route) (*mode
 		}
 
 		query = tx.Rebind(`INSERT INTO routes (
+			app_id,
 			app_name,
 			path,
 			image,
@@ -464,6 +477,7 @@ func (ds *sqlStore) InsertRoute(ctx context.Context, route *models.Route) (*mode
 			updated_at
 		)
 		VALUES (
+			:app_id,
 			:app_name,
 			:path,
 			:image,
@@ -633,6 +647,7 @@ func (ds *sqlStore) InsertCall(ctx context.Context, call *models.Call) error {
 		completed_at,
 		status,
 		app_name,
+		app_id,
 		path,
 		stats,
 		error
@@ -644,6 +659,7 @@ func (ds *sqlStore) InsertCall(ctx context.Context, call *models.Call) error {
 		:completed_at,
 		:status,
 		:app_name,
+		:app_id,
 		:path,
 		:stats,
 		:error
@@ -664,7 +680,8 @@ func equivalentCalls(expected *models.Call, actual *models.Call) bool {
 		expected.AppName == actual.AppName &&
 		expected.Path == actual.Path &&
 		expected.Error == actual.Error &&
-		len(expected.Stats) == len(actual.Stats)
+		len(expected.Stats) == len(actual.Stats) &&
+		expected.AppID == actual.AppID
 	// TODO: We don't do comparisons of individual Stats. We probably should.
 	return equivalentFields
 }
@@ -702,6 +719,7 @@ func (ds *sqlStore) UpdateCall(ctx context.Context, from *models.Call, to *model
 			completed_at = :completed_at,
 			status = :status,
 			app_name = :app_name,
+			app_id = :app_id,
 			path = :path,
 			stats = :stats,
 			error = :error
@@ -782,9 +800,16 @@ func (ds *sqlStore) InsertLog(ctx context.Context, appName, callID string, logR 
 		log = b.String()
 	}
 
-	query := ds.db.Rebind(`INSERT INTO logs (id, app_name, log) VALUES (?, ?, ?);`)
-	_, err := ds.db.ExecContext(ctx, query, callID, appName, log)
-	return err
+	return ds.Tx(func(tx *sqlx.Tx) error {
+		app := &models.App{}
+		err := getAppTx(tx, ctx, appName, app)
+		if err != nil {
+			return err
+		}
+		query := tx.Rebind(`INSERT INTO logs (id, app_name, app_id, log) VALUES (?, ?, ?, ?);`)
+		_, err = tx.ExecContext(ctx, query, callID, app.Name, app.ID, log)
+		return err
+	})
 }
 
 func (ds *sqlStore) GetLog(ctx context.Context, appName, callID string) (io.Reader, error) {
