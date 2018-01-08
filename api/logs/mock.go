@@ -15,7 +15,7 @@ func NewMock() models.LogStore {
 	return &mock{make(map[string]io.Reader)}
 }
 
-func (m *mock) InsertLog(ctx context.Context, appName, callID string, callLog io.Reader) error {
+func (m *mock) InsertLog(ctx context.Context, appID, callID string, callLog io.Reader) error {
 	m.Logs[callID] = callLog
 	return nil
 }

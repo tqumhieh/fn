@@ -34,10 +34,10 @@ func testRunner(t *testing.T, args ...interface{}) (agent.Agent, context.CancelF
 
 func TestRouteRunnerGet(t *testing.T) {
 	buf := setLogBuffer()
+	app := &models.App{Name: "myapp", Config: models.Config{}}
+	app.SetDefaults()
 	ds := datastore.NewMockInit(
-		[]*models.App{
-			{Name: "myapp", Config: models.Config{}},
-		}, nil, nil,
+		[]*models.App{app}, nil, nil,
 	)
 
 	rnr, cancel := testRunner(t, ds)
@@ -78,10 +78,10 @@ func TestRouteRunnerGet(t *testing.T) {
 func TestRouteRunnerPost(t *testing.T) {
 	buf := setLogBuffer()
 
+	app := &models.App{Name: "myapp", Config: models.Config{}}
+	app.SetDefaults()
 	ds := datastore.NewMockInit(
-		[]*models.App{
-			{Name: "myapp", Config: models.Config{}},
-		}, nil, nil,
+		[]*models.App{app}, nil, nil,
 	)
 
 	rnr, cancel := testRunner(t, ds)
@@ -125,20 +125,21 @@ func TestRouteRunnerPost(t *testing.T) {
 func TestRouteRunnerExecution(t *testing.T) {
 	buf := setLogBuffer()
 
+	app := &models.App{Name: "myapp", Config: models.Config{}}
+	app.SetDefaults()
+
 	ds := datastore.NewMockInit(
-		[]*models.App{
-			{Name: "myapp", Config: models.Config{}},
-		},
+		[]*models.App{app},
 		[]*models.Route{
-			{Path: "/", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
-			{Path: "/myhot", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
-			{Path: "/myhotjason", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Format: "json", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
-			{Path: "/myroute", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
-			{Path: "/myerror", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
-			{Path: "/mydne", AppName: "myapp", Image: "fnproject/imagethatdoesnotexist", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30},
-			{Path: "/mydnehot", AppName: "myapp", Image: "fnproject/imagethatdoesnotexist", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30},
-			{Path: "/mydneregistry", AppName: "myapp", Image: "localhost:5000/fnproject/imagethatdoesnotexist", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30},
-			{Path: "/myoom", AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 8, Timeout: 30, IdleTimeout: 30},
+			{Path: "/", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
+			{Path: "/myhot", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
+			{Path: "/myhotjason", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Format: "json", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
+			{Path: "/myroute", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
+			{Path: "/myerror", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30, Headers: map[string][]string{"X-Function": {"Test"}}},
+			{Path: "/mydne", AppID: app.ID, AppName: "myapp", Image: "fnproject/imagethatdoesnotexist", Type: "sync", Memory: 128, Timeout: 30, IdleTimeout: 30},
+			{Path: "/mydnehot", AppID: app.ID, AppName: "myapp", Image: "fnproject/imagethatdoesnotexist", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30},
+			{Path: "/mydneregistry", AppID: app.ID, AppName: "myapp", Image: "localhost:5000/fnproject/imagethatdoesnotexist", Type: "sync", Format: "http", Memory: 128, Timeout: 30, IdleTimeout: 30},
+			{Path: "/myoom", AppID: app.ID, AppName: "myapp", Image: "fnproject/fn-test-utils", Type: "sync", Memory: 8, Timeout: 30, IdleTimeout: 30},
 		}, nil,
 	)
 

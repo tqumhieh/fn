@@ -82,9 +82,9 @@ func (s *Server) FireAfterAppDelete(ctx context.Context, app *models.App) error 
 // todo: All of these listener methods could/should return the 2nd param rather than modifying in place. For instance,
 // if a listener were to change the appName here (maybe prefix it or something for the database), it wouldn't be reflected anywhere else.
 // If this returned appName, then keep passing along the returned appName, it would work.
-func (s *Server) FireBeforeAppGet(ctx context.Context, appName string) error {
+func (s *Server) FireBeforeAppGet(ctx context.Context, app *models.App) error {
 	for _, l := range s.appListeners {
-		err := l.BeforeAppGet(ctx, appName)
+		err := l.BeforeAppGet(ctx, app)
 		if err != nil {
 			return err
 		}

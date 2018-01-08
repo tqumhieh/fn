@@ -17,10 +17,10 @@ type metricds struct {
 	ds models.Datastore
 }
 
-func (m *metricds) GetApp(ctx context.Context, appName string) (*models.App, error) {
+func (m *metricds) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_app")
 	defer span.Finish()
-	return m.ds.GetApp(ctx, appName)
+	return m.ds.GetApp(ctx, app)
 }
 
 func (m *metricds) GetApps(ctx context.Context, filter *models.AppFilter) ([]*models.App, error) {
@@ -47,16 +47,16 @@ func (m *metricds) RemoveApp(ctx context.Context, app *models.App) error {
 	return m.ds.RemoveApp(ctx, app)
 }
 
-func (m *metricds) GetRoute(ctx context.Context, appName, routePath string) (*models.Route, error) {
+func (m *metricds) GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_route")
 	defer span.Finish()
-	return m.ds.GetRoute(ctx, appName, routePath)
+	return m.ds.GetRoute(ctx, app, routePath)
 }
 
-func (m *metricds) GetRoutesByApp(ctx context.Context, appName string, filter *models.RouteFilter) (routes []*models.Route, err error) {
+func (m *metricds) GetRoutesByApp(ctx context.Context, app *models.App, filter *models.RouteFilter) (routes []*models.Route, err error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_routes_by_app")
 	defer span.Finish()
-	return m.ds.GetRoutesByApp(ctx, appName, filter)
+	return m.ds.GetRoutesByApp(ctx, app, filter)
 }
 
 func (m *metricds) InsertRoute(ctx context.Context, route *models.Route) (*models.Route, error) {
@@ -71,10 +71,10 @@ func (m *metricds) UpdateRoute(ctx context.Context, route *models.Route) (*model
 	return m.ds.UpdateRoute(ctx, route)
 }
 
-func (m *metricds) RemoveRoute(ctx context.Context, appName, routePath string) error {
+func (m *metricds) RemoveRoute(ctx context.Context, app *models.App, routePath string) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_remove_route")
 	defer span.Finish()
-	return m.ds.RemoveRoute(ctx, appName, routePath)
+	return m.ds.RemoveRoute(ctx, app, routePath)
 }
 
 func (m *metricds) InsertCall(ctx context.Context, call *models.Call) error {
@@ -101,10 +101,10 @@ func (m *metricds) GetCalls(ctx context.Context, filter *models.CallFilter) ([]*
 	return m.ds.GetCalls(ctx, filter)
 }
 
-func (m *metricds) InsertLog(ctx context.Context, appName, callID string, callLog io.Reader) error {
+func (m *metricds) InsertLog(ctx context.Context, appID, callID string, callLog io.Reader) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_insert_log")
 	defer span.Finish()
-	return m.ds.InsertLog(ctx, appName, callID, callLog)
+	return m.ds.InsertLog(ctx, appID, callID, callLog)
 }
 
 func (m *metricds) GetLog(ctx context.Context, appName, callID string) (io.Reader, error) {
