@@ -26,7 +26,6 @@ type Routes []*Route
 
 type Route struct {
 	AppID       string          `json:"app_id" db:"app_id"`
-	AppName     string          `json:"app_name" db:"app_name"`
 	Path        string          `json:"path" db:"path"`
 	Image       string          `json:"image" db:"image"`
 	Memory      uint64          `json:"memory" db:"memory"`
@@ -83,8 +82,8 @@ func (r *Route) SetDefaults() {
 
 // Validate validates all field values, returning the first error, if any.
 func (r *Route) Validate() error {
-	if r.AppName == "" {
-		return ErrRoutesMissingAppName
+	if r.AppID == "" {
+		return ErrRoutesMissingAppID
 	}
 
 	if r.Path == "" {
@@ -159,7 +158,7 @@ func (r1 *Route) Equals(r2 *Route) bool {
 	// the RHS of && won't eval if eq==false so config/headers checking is lazy
 
 	eq := true
-	eq = eq && r1.AppName == r2.AppName
+	eq = eq && r1.AppID == r2.AppID
 	eq = eq && r1.Path == r2.Path
 	eq = eq && r1.Image == r2.Image
 	eq = eq && r1.Memory == r2.Memory
@@ -236,7 +235,7 @@ func (r *Route) Update(new *Route) {
 
 type RouteFilter struct {
 	PathPrefix string // this is prefix match TODO
-	AppName    string // this is exact match (important for security)
+	AppID      string // this is exact match (important for security)
 	Image      string // this is exact match
 
 	Cursor  string
