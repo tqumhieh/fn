@@ -46,7 +46,7 @@ func traceWrap(c *gin.Context) {
 	// If wireContext == nil, a root span will be created.
 	// TODO we should add more tags?
 	serverSpan := opentracing.StartSpan("serve_http", ext.RPCServerOption(wireContext), opentracing.Tag{Key: "path", Value: c.Request.URL.Path})
-	serverSpan.SetBaggageItem("fn_appname", c.Param(api.CApp))
+	serverSpan.SetBaggageItem("fn_app", c.Param(api.CApp))
 	serverSpan.SetBaggageItem("fn_path", c.Param(api.CRoute))
 	defer serverSpan.Finish()
 
@@ -73,8 +73,8 @@ func loggerWrap(c *gin.Context) {
 	ctx, _ := common.LoggerWithFields(c.Request.Context(), extractFields(c))
 
 	if appName := c.Param(api.CApp); appName != "" {
-		c.Set(api.AppName, appName)
-		ctx = context.WithValue(ctx, api.AppName, appName)
+		c.Set(api.App, appName)
+		ctx = context.WithValue(ctx, api.App, appName)
 	}
 
 	if routePath := c.Param(api.CRoute); routePath != "" {
@@ -88,7 +88,7 @@ func loggerWrap(c *gin.Context) {
 
 func setAppNameInCtx(c *gin.Context) {
 	// add appName to context
-	appName := c.GetString(api.AppName)
+	appName := c.GetString(api.App)
 	if appName != "" {
 		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), fnext.AppNameKey, appName))
 	}
@@ -96,7 +96,7 @@ func setAppNameInCtx(c *gin.Context) {
 }
 
 func appNameCheck(c *gin.Context) {
-	appName := c.GetString(api.AppName)
+	appName := c.GetString(api.App)
 	if appName == "" {
 		handleErrorResponse(c, models.ErrAppsMissingName)
 		c.Abort()

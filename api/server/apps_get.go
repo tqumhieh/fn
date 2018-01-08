@@ -10,15 +10,15 @@ import (
 func (s *Server) handleAppGet(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	appName := c.MustGet(api.AppName).(string)
+	appIDorName := c.MustGet(api.App).(string)
 
-	err := s.FireBeforeAppGet(ctx, appName)
+	err := s.FireBeforeAppGet(ctx, appIDorName)
 	if err != nil {
 		handleErrorResponse(c, err)
 		return
 	}
 
-	app, err := s.datastore.GetApp(ctx, appName)
+	app, err := s.datastore.GetApp(ctx, appIDorName)
 	if err != nil {
 		handleErrorResponse(c, err)
 		return

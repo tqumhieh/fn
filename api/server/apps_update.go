@@ -33,7 +33,9 @@ func (s *Server) handleAppUpdate(c *gin.Context) {
 		return
 	}
 
-	wapp.App.Name = c.MustGet(api.AppName).(string)
+	appIDorName := c.MustGet(api.App).(string)
+	wapp.App.Name = appIDorName
+	wapp.App.ID = appIDorName
 
 	err = s.FireBeforeAppUpdate(ctx, wapp.App)
 	if err != nil {

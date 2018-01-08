@@ -150,6 +150,7 @@ type Call struct {
 type CallFilter struct {
 	Path     string // match
 	AppName  string // match
+	AppID    string // match
 	FromTime strfmt.DateTime
 	ToTime   strfmt.DateTime
 	Cursor   string

@@ -13,11 +13,12 @@ func (s *Server) handleAppDelete(c *gin.Context) {
 	ctx := c.Request.Context()
 	log := common.Logger(ctx)
 
-	app := &models.App{Name: c.MustGet(api.AppName).(string)}
+	appIDorName := c.MustGet(api.App).(string)
+	app := &models.App{Name: appIDorName, ID: appIDorName}
 
 	err := s.FireBeforeAppDelete(ctx, app)
 
-	err = s.datastore.RemoveApp(ctx, app.Name)
+	err = s.datastore.RemoveApp(ctx, appIDorName)
 	if err != nil {
 		handleErrorResponse(c, err)
 		return
