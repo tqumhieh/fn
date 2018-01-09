@@ -275,7 +275,7 @@ func getSlotQueueKey(call *call) string {
 	// values, to make map lookups quicker [than the giant unique string]
 
 	hash := sha1.New()
-	fmt.Fprint(hash, call.AppName, "\x00")
+	fmt.Fprint(hash, call.AppID, "\x00")
 	fmt.Fprint(hash, call.Path, "\x00")
 	fmt.Fprint(hash, call.Image, "\x00")
 	fmt.Fprint(hash, call.Timeout, "\x00")
