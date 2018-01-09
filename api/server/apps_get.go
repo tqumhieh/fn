@@ -11,9 +11,7 @@ import (
 func (s *Server) handleAppGet(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	appIDorName := c.MustGet(api.App).(string)
-
-	app := &models.App{Name: appIDorName, ID: appIDorName}
+	app := &models.App{Name: c.MustGet(api.App).(string)}
 	err := s.FireBeforeAppGet(ctx, app)
 	if err != nil {
 		handleErrorResponse(c, err)

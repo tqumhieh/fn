@@ -13,8 +13,7 @@ func (s *Server) handleAppDelete(c *gin.Context) {
 	ctx := c.Request.Context()
 	log := common.Logger(ctx)
 
-	appIDorName := c.MustGet(api.App).(string)
-	app := &models.App{Name: appIDorName, ID: appIDorName}
+	app := &models.App{Name: c.MustGet(api.App).(string)}
 
 	err := s.FireBeforeAppDelete(ctx, app)
 

@@ -53,10 +53,10 @@ func (s *Server) handleFunctionCall2(c *gin.Context) error {
 
 // TODO it would be nice if we could make this have nothing to do with the gin.Context but meh
 // TODO make async store an *http.Request? would be sexy until we have different api format...
-func (s *Server) serve(c *gin.Context, appIDorName, path string) error {
+func (s *Server) serve(c *gin.Context, appName, path string) error {
 	// GetCall can mod headers, assign an id, look up the route/app (cached),
 	// strip params, etc.
-	app := &models.App{Name: appIDorName, ID: appIDorName}
+	app := &models.App{Name: appName}
 	call, err := s.agent.GetCall(
 		agent.WithWriter(c.Writer), // XXX (reed): order matters [for now]
 		agent.FromRequest(app, path, c.Request),
