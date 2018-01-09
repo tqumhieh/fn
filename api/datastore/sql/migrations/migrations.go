@@ -8,6 +8,8 @@
 // 12_remove_route_app_name.up.sql
 // 13_remove_call_app_name.down.sql
 // 13_remove_call_app_name.up.sql
+// 14_remove_log_app_name.down.sql
+// 14_remove_log_app_name.up.sql
 // 1_add_route_created_at.down.sql
 // 1_add_route_created_at.up.sql
 // 2_add_call_stats.down.sql
@@ -249,6 +251,46 @@ func _13_remove_call_app_nameUpSql() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "13_remove_call_app_name.up.sql", size: 40, mode: os.FileMode(420), modTime: time.Unix(1515792618, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __14_remove_log_app_nameDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\xc8\xc9\x4f\x2f\x56\x70\x74\x71\x51\x48\x2c\x28\x88\xcf\x4b\xcc\x4d\x55\x08\x73\x0c\x72\xf6\x70\x0c\xd2\x30\x32\x35\xd3\xb4\xe6\x02\x04\x00\x00\xff\xff\x31\x7b\xf4\x80\x2c\x00\x00\x00")
+
+func _14_remove_log_app_nameDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__14_remove_log_app_nameDownSql,
+		"14_remove_log_app_name.down.sql",
+	)
+}
+
+func _14_remove_log_app_nameDownSql() (*asset, error) {
+	bytes, err := _14_remove_log_app_nameDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "14_remove_log_app_name.down.sql", size: 44, mode: os.FileMode(420), modTime: time.Unix(1515792788, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __14_remove_log_app_nameUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\xc8\xc9\x4f\x2f\x56\x70\x09\xf2\x0f\x50\x70\xf6\xf7\x09\xf5\xf5\x53\x48\x2c\x28\x88\xcf\x4b\xcc\x4d\xb5\xe6\x02\x04\x00\x00\xff\xff\x8c\xfb\x06\x4b\x27\x00\x00\x00")
+
+func _14_remove_log_app_nameUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__14_remove_log_app_nameUpSql,
+		"14_remove_log_app_name.up.sql",
+	)
+}
+
+func _14_remove_log_app_nameUpSql() (*asset, error) {
+	bytes, err := _14_remove_log_app_nameUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "14_remove_log_app_name.up.sql", size: 39, mode: os.FileMode(420), modTime: time.Unix(1515792788, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -673,6 +715,8 @@ var _bindata = map[string]func() (*asset, error){
 	"12_remove_route_app_name.up.sql": _12_remove_route_app_nameUpSql,
 	"13_remove_call_app_name.down.sql": _13_remove_call_app_nameDownSql,
 	"13_remove_call_app_name.up.sql": _13_remove_call_app_nameUpSql,
+	"14_remove_log_app_name.down.sql": _14_remove_log_app_nameDownSql,
+	"14_remove_log_app_name.up.sql": _14_remove_log_app_nameUpSql,
 	"1_add_route_created_at.down.sql": _1_add_route_created_atDownSql,
 	"1_add_route_created_at.up.sql": _1_add_route_created_atUpSql,
 	"2_add_call_stats.down.sql": _2_add_call_statsDownSql,
@@ -741,6 +785,8 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"12_remove_route_app_name.up.sql": &bintree{_12_remove_route_app_nameUpSql, map[string]*bintree{}},
 	"13_remove_call_app_name.down.sql": &bintree{_13_remove_call_app_nameDownSql, map[string]*bintree{}},
 	"13_remove_call_app_name.up.sql": &bintree{_13_remove_call_app_nameUpSql, map[string]*bintree{}},
+	"14_remove_log_app_name.down.sql": &bintree{_14_remove_log_app_nameDownSql, map[string]*bintree{}},
+	"14_remove_log_app_name.up.sql": &bintree{_14_remove_log_app_nameUpSql, map[string]*bintree{}},
 	"1_add_route_created_at.down.sql": &bintree{_1_add_route_created_atDownSql, map[string]*bintree{}},
 	"1_add_route_created_at.up.sql": &bintree{_1_add_route_created_atUpSql, map[string]*bintree{}},
 	"2_add_call_stats.down.sql": &bintree{_2_add_call_statsDownSql, map[string]*bintree{}},
