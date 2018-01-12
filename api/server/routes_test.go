@@ -110,7 +110,7 @@ func TestRouteCreate(t *testing.T) {
 		{commonDS, logs.NewMock(), http.MethodPost, "/v1/apps/a/routes", `{ "route": { "path": "/myroute", "type": "sync" } }`, http.StatusBadRequest, models.ErrRoutesMissingImage},
 		{commonDS, logs.NewMock(), http.MethodPost, "/v1/apps/a/routes", `{ "route": { "image": "fnproject/hello", "type": "sync" } }`, http.StatusBadRequest, models.ErrRoutesMissingPath},
 		{commonDS, logs.NewMock(), http.MethodPost, "/v1/apps/a/routes", `{ "route": { "image": "fnproject/hello", "path": "myroute", "type": "sync" } }`, http.StatusBadRequest, models.ErrRoutesInvalidPath},
-		{commonDS, logs.NewMock(), http.MethodPost, "/v1/apps/$/routes", `{ "route": { "image": "fnproject/hello", "path": "/myroute", "type": "sync", "cpus": "-100" } }`, http.StatusBadRequest, models.ErrAppsInvalidName},
+		{commonDS, logs.NewMock(), http.MethodPost, "/v1/apps/$/routes", `{ "route": { "image": "fnproject/hello", "path": "/myroute", "type": "sync", "cpus": "100" } }`, http.StatusBadRequest, models.ErrAppsInvalidName},
 		{datastore.NewMockInit([]*models.App{a},
 			[]*models.Route{
 				{

@@ -6,7 +6,6 @@ import (
 	"path"
 	"time"
 
-	"fmt"
 	"github.com/fnproject/fn/api"
 	"github.com/fnproject/fn/api/agent"
 	"github.com/fnproject/fn/api/common"
@@ -69,7 +68,6 @@ func (s *Server) serve(c *gin.Context, appName, path string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(appName)
 	model := call.Model()
 	{ // scope this, to disallow ctx use outside of this scope. add id for handleErrorResponse logger
 		ctx, _ := common.LoggerWithFields(c.Request.Context(), logrus.Fields{"id": model.ID})
