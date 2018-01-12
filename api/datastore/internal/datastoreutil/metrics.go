@@ -23,6 +23,12 @@ func (m *metricds) GetApp(ctx context.Context, app *models.App) (*models.App, er
 	return m.ds.GetApp(ctx, app)
 }
 
+func (m *metricds) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_app_by_id")
+	defer span.Finish()
+	return m.ds.GetAppByID(ctx, appID)
+}
+
 func (m *metricds) GetApps(ctx context.Context, filter *models.AppFilter) ([]*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_apps")
 	defer span.Finish()
@@ -47,10 +53,10 @@ func (m *metricds) RemoveApp(ctx context.Context, app *models.App) error {
 	return m.ds.RemoveApp(ctx, app)
 }
 
-func (m *metricds) GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error) {
+func (m *metricds) GetRoute(ctx context.Context, appID, routePath string) (*models.Route, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_route")
 	defer span.Finish()
-	return m.ds.GetRoute(ctx, app, routePath)
+	return m.ds.GetRoute(ctx, appID, routePath)
 }
 
 func (m *metricds) GetRoutesByApp(ctx context.Context, app *models.App, filter *models.RouteFilter) (routes []*models.Route, err error) {

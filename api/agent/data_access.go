@@ -17,10 +17,10 @@ import (
 // mediation through an API node).
 type DataAccess interface {
 	// GetApp abstracts querying the datastore for an app.
-	GetApp(ctx context.Context, app *models.App) (*models.App, error)
+	GetApp(ctx context.Context, appID string) (*models.App, error)
 
 	// GetRoute abstracts querying the datastore for a route within an app.
-	GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error)
+	GetRoute(ctx context.Context, appID string, routePath string) (*models.Route, error)
 
 	// Enqueue will add a Call to the queue (ultimately forwards to mq.Push).
 	Enqueue(ctx context.Context, mCall *models.Call) error
@@ -54,16 +54,16 @@ func NewCachedDataAccess(da DataAccess) DataAccess {
 	return cda
 }
 
-func routeCacheKey(appname, path string) string {
-	return "r:" + appname + "\x00" + path
+func routeCacheKey(app, path string) string {
+	return "r:" + app + "\x00" + path
 }
 
-func appCacheKey(appname string) string {
-	return "a:" + appname
+func appCacheKey(app string) string {
+	return "a:" + app
 }
 
-func (da *CachedDataAccess) GetApp(ctx context.Context, a *models.App) (*models.App, error) {
-	key := appCacheKey(a.Name)
+func (da *CachedDataAccess) GetApp(ctx context.Context, appID string) (*models.App, error) {
+	key := appCacheKey(appID)
 	app, ok := da.cache.Get(key)
 	if ok {
 		return app.(*models.App), nil
@@ -71,7 +71,7 @@ func (da *CachedDataAccess) GetApp(ctx context.Context, a *models.App) (*models.
 
 	resp, err := da.singleflight.Do(key,
 		func() (interface{}, error) {
-			return da.DataAccess.GetApp(ctx, a)
+			return da.DataAccess.GetApp(ctx, appID)
 		})
 
 	if err != nil {
@@ -82,8 +82,8 @@ func (da *CachedDataAccess) GetApp(ctx context.Context, a *models.App) (*models.
 	return app.(*models.App), nil
 }
 
-func (da *CachedDataAccess) GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error) {
-	key := routeCacheKey(app.Name, routePath)
+func (da *CachedDataAccess) GetRoute(ctx context.Context, appID string, routePath string) (*models.Route, error) {
+	key := routeCacheKey(appID, routePath)
 	r, ok := da.cache.Get(key)
 	if ok {
 		return r.(*models.Route), nil
@@ -91,7 +91,7 @@ func (da *CachedDataAccess) GetRoute(ctx context.Context, app *models.App, route
 
 	resp, err := da.singleflight.Do(key,
 		func() (interface{}, error) {
-			return da.DataAccess.GetRoute(ctx, app, routePath)
+			return da.DataAccess.GetRoute(ctx, appID, routePath)
 		})
 
 	if err != nil {
@@ -117,12 +117,12 @@ func NewDirectDataAccess(ds models.Datastore, ls models.LogStore, mq models.Mess
 	return da
 }
 
-func (da *directDataAccess) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
-	return da.ds.GetApp(ctx, app)
+func (da *directDataAccess) GetApp(ctx context.Context, appID string) (*models.App, error) {
+	return da.ds.GetAppByID(ctx, appID)
 }
 
-func (da *directDataAccess) GetRoute(ctx context.Context, app *models.App, routePath string) (*models.Route, error) {
-	return da.ds.GetRoute(ctx, app, routePath)
+func (da *directDataAccess) GetRoute(ctx context.Context, appID string, routePath string) (*models.Route, error) {
+	return da.ds.GetRoute(ctx, appID, routePath)
 }
 
 func (da *directDataAccess) Enqueue(ctx context.Context, mCall *models.Call) error {

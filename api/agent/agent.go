@@ -670,7 +670,7 @@ func (a *agent) runHot(ctx context.Context, call *call, tok ResourceToken, state
 	// set up the stderr to capture any logs before the slot is executed and
 	// between hot functions
 	stderr := newLineWriter(&logWriter{
-		logrus.WithFields(logrus.Fields{"between_log": true, "app_name": call.AppID, "path": call.Path, "image": call.Image, "container_id": cid}),
+		logrus.WithFields(logrus.Fields{"between_log": true, "app_id": call.AppID, "path": call.Path, "image": call.Image, "container_id": cid}),
 	})
 
 	// between calls we need a reader that doesn't do anything

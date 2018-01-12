@@ -50,12 +50,7 @@ type Params []Param
 
 func FromRequest(app *models.App, path string, req *http.Request) CallOpt {
 	return func(a *agent, c *call) error {
-		app, err := a.da.GetApp(req.Context(), app)
-		if err != nil {
-			return err
-		}
-
-		route, err := a.da.GetRoute(req.Context(), app, path)
+		route, err := a.da.GetRoute(req.Context(), app.ID, path)
 		if err != nil {
 			return err
 		}
