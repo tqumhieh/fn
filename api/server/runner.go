@@ -6,6 +6,7 @@ import (
 	"path"
 	"time"
 
+	"fmt"
 	"github.com/fnproject/fn/api"
 	"github.com/fnproject/fn/api/agent"
 	"github.com/fnproject/fn/api/common"
@@ -54,14 +55,13 @@ func (s *Server) handleFunctionCall2(c *gin.Context) error {
 // TODO it would be nice if we could make this have nothing to do with the gin.Context but meh
 // TODO make async store an *http.Request? would be sexy until we have different api format...
 func (s *Server) serve(c *gin.Context, appName, path string) error {
-	// GetCall can mod headers, assign an id, look up the route/app (cached),
-	// strip params, etc.
-	app := &models.App{Name: appName}
-	app, err := s.datastore.GetApp(c.Request.Context(), app)
+	// this should happen ASAP to turn app name to app ID
+	app, err := s.agent.GetApp(c.Request.Context(), &models.App{Name: appName})
 	if err != nil {
 		return err
 	}
-
+	// GetCall can mod headers, assign an id, look up the route/app (cached),
+	// strip params, etc.
 	call, err := s.agent.GetCall(
 		agent.WithWriter(c.Writer), // XXX (reed): order matters [for now]
 		agent.FromRequest(app, path, c.Request),
@@ -69,7 +69,7 @@ func (s *Server) serve(c *gin.Context, appName, path string) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(appName)
 	model := call.Model()
 	{ // scope this, to disallow ctx use outside of this scope. add id for handleErrorResponse logger
 		ctx, _ := common.LoggerWithFields(c.Request.Context(), logrus.Fields{"id": model.ID})
