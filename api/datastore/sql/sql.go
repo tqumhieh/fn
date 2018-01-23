@@ -61,7 +61,7 @@ var tables = [...]string{`CREATE TABLE IF NOT EXISTS routes (
 );`,
 
 	`CREATE TABLE IF NOT EXISTS apps (
-	id varchar(256) NOT NULL,
+	id varchar(256),
 	name varchar(256) NOT NULL PRIMARY KEY,
 	config text NOT NULL,
 	created_at varchar(256),
@@ -321,7 +321,7 @@ func (ds *sqlStore) UpdateApp(ctx context.Context, newapp *models.App) (*models.
 	err := ds.Tx(func(tx *sqlx.Tx) error {
 		// NOTE: must query whole object since we're returning app, Update logic
 		// must only modify modifiable fields (as seen here). need to fix brittle..
-		err := getAppTx(tx, ctx, app.Name, false, app)
+		err := getAppTx(tx, ctx, app.Name, appNameSelector, app)
 		if err != nil {
 			return err
 		}
@@ -350,14 +350,9 @@ func (ds *sqlStore) UpdateApp(ctx context.Context, newapp *models.App) (*models.
 	return app, nil
 }
 
-func (ds *sqlStore) RemoveApp(ctx context.Context, app *models.App) error {
+func (ds *sqlStore) RemoveApp(ctx context.Context, appID string) error {
 	return ds.Tx(func(tx *sqlx.Tx) error {
-		var a models.App
-		err := getAppTx(tx, ctx, app.Name, false, &a)
-		if err != nil {
-			return err
-		}
-		res, err := tx.ExecContext(ctx, tx.Rebind(`DELETE FROM apps WHERE name=? OR ID=?`), a.Name, a.ID)
+		res, err := tx.ExecContext(ctx, tx.Rebind(`DELETE FROM apps WHERE id=?`), appID)
 		if err != nil {
 			return err
 		}
@@ -375,7 +370,7 @@ func (ds *sqlStore) RemoveApp(ctx context.Context, app *models.App) error {
 			`DELETE FROM routes WHERE app_id=?`,
 		}
 		for _, stmt := range deletes {
-			_, err := tx.ExecContext(ctx, tx.Rebind(stmt), app.ID)
+			_, err := tx.ExecContext(ctx, tx.Rebind(stmt), appID)
 			if err != nil {
 				return err
 			}
@@ -385,14 +380,8 @@ func (ds *sqlStore) RemoveApp(ctx context.Context, app *models.App) error {
 	})
 }
 
-func getAppTx(tx *sqlx.Tx, ctx context.Context, app string, isAppID bool, a *models.App) error {
-	q := ""
-	if !isAppID {
-		q = appNameSelector
-	} else {
-		q = appIDSelector
-	}
-	query := tx.Rebind(q)
+func getAppTx(tx *sqlx.Tx, ctx context.Context, app, appGetQuery string, a *models.App) error {
+	query := tx.Rebind(appGetQuery)
 	row := tx.QueryRowxContext(ctx, query, app)
 
 	err := row.StructScan(a)
@@ -404,7 +393,7 @@ func getAppTx(tx *sqlx.Tx, ctx context.Context, app string, isAppID bool, a *mod
 
 func (ds *sqlStore) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
 	err := ds.Tx(func(tx *sqlx.Tx) error {
-		return getAppTx(tx, ctx, app.Name, false, app)
+		return getAppTx(tx, ctx, app.Name, appNameSelector, app)
 	})
 	if err != nil {
 		return nil, err
@@ -415,7 +404,7 @@ func (ds *sqlStore) GetApp(ctx context.Context, app *models.App) (*models.App, e
 func (ds *sqlStore) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
 	var app models.App
 	err := ds.Tx(func(tx *sqlx.Tx) error {
-		return getAppTx(tx, ctx, appID, true, &app)
+		return getAppTx(tx, ctx, appID, appIDSelector, &app)
 	})
 	if err != nil {
 		return nil, err
@@ -569,9 +558,9 @@ func (ds *sqlStore) UpdateRoute(ctx context.Context, newroute *models.Route) (*m
 	return &route, nil
 }
 
-func (ds *sqlStore) RemoveRoute(ctx context.Context, app *models.App, routePath string) error {
+func (ds *sqlStore) RemoveRoute(ctx context.Context, appID string, routePath string) error {
 	query := ds.db.Rebind(`DELETE FROM routes WHERE path = ? AND app_id = ?`)
-	res, err := ds.db.ExecContext(ctx, query, routePath, app.ID)
+	res, err := ds.db.ExecContext(ctx, query, routePath, appID)
 	if err != nil {
 		return err
 	}
@@ -604,13 +593,13 @@ func (ds *sqlStore) GetRoute(ctx context.Context, appID, routePath string) (*mod
 }
 
 // GetRoutesByApp retrieves a route with a specific app name.
-func (ds *sqlStore) GetRoutesByApp(ctx context.Context, app *models.App, filter *models.RouteFilter) ([]*models.Route, error) {
+func (ds *sqlStore) GetRoutesByApp(ctx context.Context, appID string, filter *models.RouteFilter) ([]*models.Route, error) {
 	res := []*models.Route{}
 	if filter == nil {
 		filter = new(models.RouteFilter)
 	}
 
-	filter.AppID = app.ID
+	filter.AppID = appID
 	filterQuery, args := buildFilterRouteQuery(filter)
 
 	query := fmt.Sprintf("%s %s", routeSelector, filterQuery)

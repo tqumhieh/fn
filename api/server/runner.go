@@ -55,15 +55,12 @@ func (s *Server) handleFunctionCall2(c *gin.Context) error {
 // TODO make async store an *http.Request? would be sexy until we have different api format...
 func (s *Server) serve(c *gin.Context, appName, path string) error {
 	// this should happen ASAP to turn app name to app ID
-	app, err := s.agent.GetApp(c.Request.Context(), &models.App{Name: appName})
-	if err != nil {
-		return err
-	}
+
 	// GetCall can mod headers, assign an id, look up the route/app (cached),
 	// strip params, etc.
 	call, err := s.agent.GetCall(
 		agent.WithWriter(c.Writer), // XXX (reed): order matters [for now]
-		agent.FromRequest(app, path, c.Request),
+		agent.FromRequest(appName, path, c.Request),
 	)
 	if err != nil {
 		return err

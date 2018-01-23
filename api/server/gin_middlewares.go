@@ -13,7 +13,7 @@ import (
 	"github.com/fnproject/fn/fnext"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/sirupsen/logrus"
 )
@@ -46,7 +46,7 @@ func traceWrap(c *gin.Context) {
 	// If wireContext == nil, a root span will be created.
 	// TODO we should add more tags?
 	serverSpan := opentracing.StartSpan("serve_http", ext.RPCServerOption(wireContext), opentracing.Tag{Key: "path", Value: c.Request.URL.Path})
-	serverSpan.SetBaggageItem("fn_app", c.Param(api.CApp))
+	serverSpan.SetBaggageItem("fn_appname", c.Param(api.CApp))
 	serverSpan.SetBaggageItem("fn_path", c.Param(api.CRoute))
 	defer serverSpan.Finish()
 
@@ -84,6 +84,26 @@ func loggerWrap(c *gin.Context) {
 
 	c.Request = c.Request.WithContext(ctx)
 	c.Next()
+}
+
+func (s *Server) checkAppPresence() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, _ := common.LoggerWithFields(c.Request.Context(), extractFields(c))
+
+		appName := c.MustGet(api.App).(string)
+		if appName != "" {
+			app := &models.App{Name: appName}
+			app, err := s.datastore.GetApp(ctx, app)
+			if err != nil {
+				handleErrorResponse(c, err)
+				return
+			}
+			c.Set(api.AppID, app.ID)
+		}
+
+		c.Request = c.Request.WithContext(ctx)
+		c.Next()
+	}
 }
 
 func setAppNameInCtx(c *gin.Context) {

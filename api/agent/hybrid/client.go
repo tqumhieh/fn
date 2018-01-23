@@ -118,18 +118,10 @@ func (cl *client) Finish(ctx context.Context, c *models.Call, r io.Reader, async
 }
 
 func (cl *client) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
-	//span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_get_app")
-	//defer span.Finish()
-	//
-	//var a struct {
-	//	A models.App `json:"app"`
-	//}
-	//err := cl.do(ctx, nil, &a, "GET", "apps", appID)
-	//return &a.A, err
 	return nil, errors.New("not implemented")
 }
 
-func (cl *client) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
+func (cl *client) GetAppByName(ctx context.Context, app *models.App) (*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_get_app")
 	defer span.Finish()
 
