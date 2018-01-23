@@ -17,10 +17,16 @@ type metricds struct {
 	ds models.Datastore
 }
 
-func (m *metricds) GetApp(ctx context.Context, app *models.App) (*models.App, error) {
+func (m *metricds) EnsureApp(ctx context.Context, appName string) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_ensure_app")
+	defer span.Finish()
+	return m.ds.EnsureApp(ctx, appName)
+}
+
+func (m *metricds) GetAppByName(ctx context.Context, appName string) (*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_app")
 	defer span.Finish()
-	return m.ds.GetApp(ctx, app)
+	return m.ds.GetAppByName(ctx, appName)
 }
 
 func (m *metricds) GetAppByID(ctx context.Context, appID string) (*models.App, error) {

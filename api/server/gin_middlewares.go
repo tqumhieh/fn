@@ -92,13 +92,12 @@ func (s *Server) checkAppPresence() gin.HandlerFunc {
 
 		appName := c.MustGet(api.App).(string)
 		if appName != "" {
-			app := &models.App{Name: appName}
-			app, err := s.datastore.GetApp(ctx, app)
+			appID, err := s.datastore.EnsureApp(ctx, appName)
 			if err != nil {
 				handleErrorResponse(c, err)
 				return
 			}
-			c.Set(api.AppID, app.ID)
+			c.Set(api.AppID, appID)
 		}
 
 		c.Request = c.Request.WithContext(ctx)

@@ -18,7 +18,7 @@ func (s *Server) handleAppGet(c *gin.Context) {
 		return
 	}
 
-	app, err = s.datastore.GetAppByID(ctx, c.MustGet(api.AppID).(string))
+	app, err = s.datastore.GetAppByName(ctx, app.Name)
 	if err != nil {
 		handleErrorResponse(c, err)
 		return

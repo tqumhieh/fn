@@ -32,15 +32,11 @@ func writeJSON(c *gin.Context, callID, appID string, logReader io.Reader) {
 func (s *Server) handleCallLogGet(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	app, err := s.datastore.GetApp(ctx, &models.App{Name: c.MustGet(api.App).(string)})
-	if err != nil {
-		handleErrorResponse(c, err)
-		return
-	}
-
+	appID := c.MustGet(api.AppID).(string)
+	appName := c.MustGet(api.App).(string)
 	callID := c.Param(api.Call)
 
-	logReader, err := s.logstore.GetLog(ctx, app.ID, callID)
+	logReader, err := s.logstore.GetLog(ctx, appID, callID)
 	if err != nil {
 		handleErrorResponse(c, err)
 		return
@@ -49,13 +45,13 @@ func (s *Server) handleCallLogGet(c *gin.Context) {
 	mimeTypes, _ := c.Request.Header["Accept"]
 
 	if len(mimeTypes) == 0 {
-		writeJSON(c, callID, app.Name, logReader)
+		writeJSON(c, callID, appName, logReader)
 		return
 	}
 
 	for _, mimeType := range mimeTypes {
 		if strings.Contains(mimeType, "application/json") {
-			writeJSON(c, callID, app.Name, logReader)
+			writeJSON(c, callID, appName, logReader)
 			return
 		}
 		if strings.Contains(mimeType, "text/plain") {
@@ -64,7 +60,7 @@ func (s *Server) handleCallLogGet(c *gin.Context) {
 
 		}
 		if strings.Contains(mimeType, "*/*") {
-			writeJSON(c, callID, app.Name, logReader)
+			writeJSON(c, callID, appName, logReader)
 			return
 		}
 	}
