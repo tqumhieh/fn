@@ -18,7 +18,7 @@ func (s *Server) handleAppGetByName(c *gin.Context) {
 		return
 	}
 
-	app, err = s.datastore.GetAppByName(ctx, app.Name)
+	app, err = s.datastore.GetAppByID(ctx, c.MustGet(api.AppID).(string))
 	if err != nil {
 		handleErrorResponse(c, err)
 		return
@@ -36,7 +36,7 @@ func (s *Server) handleAppGetByName(c *gin.Context) {
 func (s *Server) handleAppGetByID(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	app, err := s.datastore.GetAppByName(ctx, c.MustGet(api.AppID).(string))
+	app, err := s.datastore.GetAppByID(ctx, c.MustGet(api.AppID).(string))
 	if err != nil {
 		handleErrorResponse(c, err)
 		return
