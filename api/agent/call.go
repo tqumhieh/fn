@@ -48,14 +48,9 @@ type Param struct {
 }
 type Params []Param
 
-func FromRequest(appName, path string, req *http.Request) CallOpt {
+func FromRequest(app *models.App, path string, req *http.Request) CallOpt {
 	return func(a *agent, c *call) error {
-		// unfortunately to keep API consistent we have to query route with app name
-		app, err := a.da.GetAppByName(req.Context(), appName)
-		if err != nil {
-			return err
-		}
-		route, err := a.da.GetRoute(req.Context(), app.Name, path)
+		route, err := a.da.GetRoute(req.Context(), app.ID, path)
 		if err != nil {
 			return err
 		}
@@ -86,25 +81,26 @@ func FromRequest(appName, path string, req *http.Request) CallOpt {
 		}
 
 		c.Call = &models.Call{
-			ID:    id,
-			Path:  route.Path,
-			Image: route.Image,
-			// Delay: 0,
-			Type:   route.Type,
-			Format: route.Format,
-			// Payload: TODO,
-			Priority:    new(int32), // TODO this is crucial, apparently
-			Timeout:     route.Timeout,
-			IdleTimeout: route.IdleTimeout,
-			Memory:      route.Memory,
-			CPUs:        route.CPUs,
-			Config:      buildConfig(app, route),
-			Headers:     req.Header,
-			CreatedAt:   strfmt.DateTime(time.Now()),
-			URL:         reqURL(req),
-			Method:      req.Method,
-			AppID:       app.ID,
-		}
+			AppID: app.ID,
+			CallBase: models.CallBase{
+				ID:    id,
+				Path:  route.Path,
+				Image: route.Image,
+				// Delay: 0,
+				Type:   route.Type,
+				Format: route.Format,
+				// Payload: TODO,
+				Priority:    new(int32), // TODO this is crucial, apparently
+				Timeout:     route.Timeout,
+				IdleTimeout: route.IdleTimeout,
+				Memory:      route.Memory,
+				CPUs:        route.CPUs,
+				Config:      buildConfig(app, route),
+				Headers:     req.Header,
+				CreatedAt:   strfmt.DateTime(time.Now()),
+				URL:         reqURL(req),
+				Method:      req.Method,
+			}}
 
 		c.req = req
 		return nil

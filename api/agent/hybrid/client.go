@@ -38,7 +38,7 @@ func NewClient(u string) (agent.DataAccess, error) {
 	if uri.Scheme == "" {
 		uri.Scheme = "http"
 	}
-	host := uri.Scheme + "://" + uri.Host + "/v1/"
+	host := uri.Scheme + "://" + uri.Host
 
 	httpClient := &http.Client{
 		Timeout: 60 * time.Second,
@@ -69,7 +69,7 @@ func (cl *client) Enqueue(ctx context.Context, c *models.Call) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_enqueue")
 	defer span.Finish()
 
-	err := cl.do(ctx, c, nil, "PUT", "runner", "async")
+	err := cl.do(ctx, c, nil, "PUT", "v1", "runner", "async")
 	return err
 }
 
@@ -80,7 +80,7 @@ func (cl *client) Dequeue(ctx context.Context) (*models.Call, error) {
 	var c struct {
 		C []*models.Call `json:"calls"`
 	}
-	err := cl.do(ctx, nil, &c, "GET", "runner", "async")
+	err := cl.do(ctx, nil, &c, "GET", "v1", "runner", "async")
 	if len(c.C) > 0 {
 		return c.C[0], nil
 	}
@@ -91,7 +91,7 @@ func (cl *client) Start(ctx context.Context, c *models.Call) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_start")
 	defer span.Finish()
 
-	err := cl.do(ctx, c, nil, "POST", "runner", "start")
+	err := cl.do(ctx, c, nil, "POST", "v1", "runner", "start")
 	return err
 }
 
@@ -113,23 +113,20 @@ func (cl *client) Finish(ctx context.Context, c *models.Call, r io.Reader, async
 	}
 
 	// TODO add async bit to query params or body
-	err = cl.do(ctx, bod, nil, "POST", "runner", "finish")
+	err = cl.do(ctx, bod, nil, "POST", "v1", "runner", "finish")
 	return err
 }
 
 func (cl *client) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (cl *client) GetAppByName(ctx context.Context, appName string) (*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_get_app")
 	defer span.Finish()
 
 	var a struct {
 		A models.App `json:"app"`
 	}
-	err := cl.do(ctx, nil, &a, "GET", "apps", appName)
+	err := cl.do(ctx, nil, &a, "GET", "v2", "apps", appID)
 	return &a.A, err
+
 }
 
 func (cl *client) GetRoute(ctx context.Context, appID, route string) (*models.Route, error) {
@@ -140,7 +137,7 @@ func (cl *client) GetRoute(ctx context.Context, appID, route string) (*models.Ro
 	var r struct {
 		R models.Route `json:"route"`
 	}
-	err := cl.do(ctx, nil, &r, "GET", "apps", appID, "routes", strings.TrimPrefix(route, "/"))
+	err := cl.do(ctx, nil, &r, "GET", "v2", "apps", appID, "routes", strings.TrimPrefix(route, "/"))
 	return &r.R, err
 }
 
