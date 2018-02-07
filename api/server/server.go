@@ -441,7 +441,8 @@ func (s *Server) bindHandlers(ctx context.Context) {
 	profilerSetup(engine, "/debug")
 
 	if s.nodeType != ServerTypeRunner {
-		v1 := engine.Group("/v1")
+		clean := engine.Group("/v1")
+		v1 := clean.Group("")
 		v1.Use(setAppNameInCtx)
 		v1.Use(s.apiMiddlewareWrapper())
 		v1.GET("/apps", s.handleAppList)
@@ -471,21 +472,18 @@ func (s *Server) bindHandlers(ctx context.Context) {
 		}
 
 		{
-			runner := v1.Group("/runner")
+			runner := clean.Group("/runner")
 			runner.PUT("/async", s.handleRunnerEnqueue)
 			runner.GET("/async", s.handleRunnerDequeue)
 
 			runner.POST("/start", s.handleRunnerStart)
 			runner.POST("/finish", s.handleRunnerFinish)
-		}
 
-		{
-			// at this point :app means app ID
-			v2 := engine.Group("/v2/apps/:app")
-			v2.Use(setAppNameInCtx)
-			v2.Use(s.checkAppPresenceByID())
-			v2.GET("", s.handleAppGetByID)
-			v2.GET("/routes/:route", s.handleRouteGet)
+			appsAPIV2 := runner.Group("/apps/:app")
+			appsAPIV2.Use(setAppNameInCtx)
+			appsAPIV2.Use(s.checkAppPresenceByID())
+			appsAPIV2.GET("", s.handleAppGetByID)
+			appsAPIV2.GET("/routes/:route", s.handleRouteGet)
 		}
 	}
 
