@@ -459,7 +459,7 @@ func (s *Server) bindHandlers(ctx context.Context) {
 				withAppCheck.PATCH("", s.handleAppUpdate)
 				withAppCheck.DELETE("", s.handleAppDelete)
 				withAppCheck.GET("/routes", s.handleRouteList)
-				withAppCheck.GET("/routes/:route", s.handleRouteGet)
+				withAppCheck.GET("/routes/:route", s.handleRouteGetAPI)
 				withAppCheck.PATCH("/routes/*route", s.handleRoutesPatch)
 				withAppCheck.DELETE("/routes/*route", s.handleRouteDelete)
 				withAppCheck.GET("/calls/:call", s.handleCallGet)
@@ -481,16 +481,15 @@ func (s *Server) bindHandlers(ctx context.Context) {
 
 			appsAPIV2 := runner.Group("/apps/:app")
 			appsAPIV2.Use(setAppNameInCtx)
-			appsAPIV2.Use(s.checkAppPresenceByID())
 			appsAPIV2.GET("", s.handleAppGetByID)
-			appsAPIV2.GET("/routes/:route", s.handleRouteGet)
+			appsAPIV2.GET("/routes/:route", s.handleRouteGetRunner)
 		}
 	}
 
 	if s.nodeType != ServerTypeAPI {
 		runner := engine.Group("/r")
-		runner.Use(appNameCheck)
-		runner.Use(s.checkAppPresenceByName())
+		runner.Use(s.checkAppPresenceByNameAtRunner())
+		//runner.Use(appNameCheck)
 		runner.Any("/:app", s.handleFunctionCall)
 		runner.Any("/:app/*route", s.handleFunctionCall)
 	}
@@ -557,8 +556,8 @@ type routesResponse struct {
 }
 
 type callResponse struct {
-	Message string           `json:"message"`
-	Call    *models.CallBase `json:"call"`
+	Message string       `json:"message"`
+	Call    *models.Call `json:"call"`
 }
 
 type callsResponse struct {

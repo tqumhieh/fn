@@ -18,7 +18,7 @@ type metricds struct {
 }
 
 func (m *metricds) GetAppID(ctx context.Context, appName string) (string, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_ensure_app")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ds_get_app_id")
 	defer span.Finish()
 	return m.ds.GetAppID(ctx, appName)
 }

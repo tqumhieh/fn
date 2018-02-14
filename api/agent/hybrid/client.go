@@ -38,7 +38,7 @@ func NewClient(u string) (agent.DataAccess, error) {
 	if uri.Scheme == "" {
 		uri.Scheme = "http"
 	}
-	host := uri.Scheme + "://" + uri.Host + "v1"
+	host := uri.Scheme + "://" + uri.Host + "/v1/"
 
 	httpClient := &http.Client{
 		Timeout: 60 * time.Second,
@@ -117,6 +117,17 @@ func (cl *client) Finish(ctx context.Context, c *models.Call, r io.Reader, async
 	return err
 }
 
+func (cl *client) GetAppID(ctx context.Context, appName string) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_get_app_id")
+	defer span.Finish()
+
+	var a struct {
+		A models.App `json:"app"`
+	}
+	err := cl.do(ctx, nil, &a, "GET", "apps", appName)
+	return a.A.ID, err
+}
+
 func (cl *client) GetAppByID(ctx context.Context, appID string) (*models.App, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "hybrid_client_get_app")
 	defer span.Finish()
@@ -126,7 +137,6 @@ func (cl *client) GetAppByID(ctx context.Context, appID string) (*models.App, er
 	}
 	err := cl.do(ctx, nil, &a, "GET", "runner", "apps", appID)
 	return &a.A, err
-
 }
 
 func (cl *client) GetRoute(ctx context.Context, appID, route string) (*models.Route, error) {

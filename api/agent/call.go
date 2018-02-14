@@ -82,25 +82,24 @@ func FromRequest(app *models.App, path string, req *http.Request) CallOpt {
 
 		c.Call = &models.Call{
 			AppID: app.ID,
-			CallBase: models.CallBase{
-				ID:    id,
-				Path:  route.Path,
-				Image: route.Image,
-				// Delay: 0,
-				Type:   route.Type,
-				Format: route.Format,
-				// Payload: TODO,
-				Priority:    new(int32), // TODO this is crucial, apparently
-				Timeout:     route.Timeout,
-				IdleTimeout: route.IdleTimeout,
-				Memory:      route.Memory,
-				CPUs:        route.CPUs,
-				Config:      buildConfig(app, route),
-				Headers:     req.Header,
-				CreatedAt:   strfmt.DateTime(time.Now()),
-				URL:         reqURL(req),
-				Method:      req.Method,
-			}}
+			ID:    id,
+			Path:  route.Path,
+			Image: route.Image,
+			// Delay: 0,
+			Type:   route.Type,
+			Format: route.Format,
+			// Payload: TODO,
+			Priority:    new(int32), // TODO this is crucial, apparently
+			Timeout:     route.Timeout,
+			IdleTimeout: route.IdleTimeout,
+			Memory:      route.Memory,
+			CPUs:        route.CPUs,
+			Config:      buildConfig(app, route),
+			Headers:     req.Header,
+			CreatedAt:   strfmt.DateTime(time.Now()),
+			URL:         reqURL(req),
+			Method:      req.Method,
+		}
 
 		c.req = req
 		return nil
