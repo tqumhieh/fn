@@ -45,7 +45,7 @@ func TestCanCallfunction(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, "sync",
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -71,7 +71,7 @@ func TestCallOutputMatch(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, "sync",
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -101,7 +101,7 @@ func TestCanCallAsync(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, "sync",
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -127,7 +127,7 @@ func TestCanGetAsyncState(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, "sync",
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -192,7 +192,7 @@ func TestCanCauseTimeout(t *testing.T) {
 
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, routePath, image, routeType,
-		s.Format, int32(10), s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, int32(10), s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -247,7 +247,7 @@ func TestMultiLog(t *testing.T) {
 
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, routePath, image, routeType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -299,7 +299,7 @@ func TestCallResponseHeadersMatch(t *testing.T) {
 	image := "denismakogon/os.environ"
 	routeType := "sync"
 	CreateRoute(t, s.Context, s.Client, s.AppName, routePath, image, routeType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -331,7 +331,7 @@ func TestCanWriteLogs(t *testing.T) {
 
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, routePath, image, routeType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, uint64(512), s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",
@@ -372,7 +372,7 @@ func TestOversizedLog(t *testing.T) {
 
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, routePath, image, routeType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, uint64(512), s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	size := 1 * 1024 * 1024 * 1024
 	u := url.URL{

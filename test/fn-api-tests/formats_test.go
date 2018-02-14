@@ -25,7 +25,7 @@ func TestFnJSONFormats(t *testing.T) {
 
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, route, image, "sync",
-		format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	u := url.URL{
 		Scheme: "http",

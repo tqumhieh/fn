@@ -13,7 +13,7 @@ func TestCreateRouteEmptyType(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	_, err := createRoute(s.Context, s.Client, s.AppName, s.RoutePath, s.Image, "",
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 	if err == nil {
 		t.Errorf("Should fail with Invalid route Type.")
 	}
@@ -25,7 +25,7 @@ func TestCanCreateRoute(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 	DeleteApp(t, s.Context, s.Client, s.AppName)
 }
 
@@ -34,7 +34,7 @@ func TestListRoutes(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 	if !assertContainsRoute(ListRoutes(t, s.Context, s.Client, s.AppName), s.RoutePath) {
 		t.Errorf("Unable to find corresponding route `%v` in list", s.RoutePath)
 	}
@@ -46,7 +46,7 @@ func TestInspectRoute(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	rObjects := []*models.Route{GetRoute(t, s.Context, s.Client, s.AppName, s.RoutePath)}
 	if !assertContainsRoute(rObjects, s.RoutePath) {
@@ -62,7 +62,7 @@ func TestCanUpdateRouteType(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	routeResp, err := UpdateRoute(
 		t, s.Context, s.Client,
@@ -81,7 +81,7 @@ func TestCanUpdateRouteConfig(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	newRouteConf := map[string]string{
 		"A": "a",
@@ -106,7 +106,7 @@ func TestCantUpdateRoutePath(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	_, err := UpdateRoute(
 		t, s.Context, s.Client,
@@ -126,10 +126,10 @@ func TestRouteDuplicate(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	_, err := createRoute(s.Context, s.Client, s.AppName, s.Image, s.RoutePath,
-		newRouteType, s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		newRouteType, s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 	if err == nil {
 		t.Errorf("Route duplicate error should appear, but it didn't")
 	}
@@ -142,7 +142,7 @@ func TestCanDeleteRoute(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	DeleteRoute(t, s.Context, s.Client, s.AppName, s.RoutePath)
 	DeleteApp(t, s.Context, s.Client, s.AppName)
@@ -183,7 +183,7 @@ func TestDeployUpdate(t *testing.T) {
 	s := SetupDefaultSuite()
 	CreateApp(t, s.Context, s.Client, s.AppName, map[string]string{})
 	CreateRoute(t, s.Context, s.Client, s.AppName, s.RoutePath, s.Image, s.RouteType,
-		s.Format, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
+		s.Format, s.Memory, s.Timeout, s.IdleTimeout, s.RouteConfig, s.RouteHeaders)
 
 	updatedRoute := DeployRoute(
 		t, s.Context, s.Client,

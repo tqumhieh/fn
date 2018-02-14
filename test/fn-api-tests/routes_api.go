@@ -89,7 +89,7 @@ func assertRouteFields(t *testing.T, routeObject *models.Route, path, image, rou
 
 }
 
-func createRoute(ctx context.Context, fnclient *client.Fn, appName, image, routePath, routeType, routeFormat string, timeout, idleTimeout int32, routeConfig map[string]string, headers map[string][]string) (*routes.PostAppsAppRoutesOK, error) {
+func createRoute(ctx context.Context, fnclient *client.Fn, appName, image, routePath, routeType, routeFormat string, memory uint64, timeout, idleTimeout int32, routeConfig map[string]string, headers map[string][]string) (*routes.PostAppsAppRoutesOK, error) {
 	cfg := &routes.PostAppsAppRoutesParams{
 		App: appName,
 		Body: &models.RouteWrapper{
@@ -102,6 +102,7 @@ func createRoute(ctx context.Context, fnclient *client.Fn, appName, image, route
 				Format:      routeFormat,
 				Timeout:     &timeout,
 				IDLETimeout: &idleTimeout,
+				Memory:      memory,
 			},
 		},
 		Context: ctx,
@@ -121,8 +122,8 @@ func createRoute(ctx context.Context, fnclient *client.Fn, appName, image, route
 
 }
 
-func CreateRoute(t *testing.T, ctx context.Context, fnclient *client.Fn, appName, routePath, image, routeType, routeFormat string, timeout, idleTimeout int32, routeConfig map[string]string, headers map[string][]string) {
-	routeResponse, err := createRoute(ctx, fnclient, appName, image, routePath, routeType, routeFormat, timeout, idleTimeout, routeConfig, headers)
+func CreateRoute(t *testing.T, ctx context.Context, fnclient *client.Fn, appName, routePath, image, routeType, routeFormat string, memory uint64, timeout, idleTimeout int32, routeConfig map[string]string, headers map[string][]string) {
+	routeResponse, err := createRoute(ctx, fnclient, appName, image, routePath, routeType, routeFormat, memory, timeout, idleTimeout, routeConfig, headers)
 	CheckRouteResponseError(t, err)
 
 	assertRouteFields(t, routeResponse.Payload.Route, routePath, image, routeType, routeFormat)
